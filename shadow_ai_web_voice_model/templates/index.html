@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>⚡ Shadow AI Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Shadow AI</h1>
+        <div class="chat-box" id="chatBox"></div>
+
+        <form id="chatForm">
+            <select id="modelSelector" name="model">
+                <option value="llama3-8b-8192">LLaMA 3 (8B)</option>
+                <option value="llama3-70b-8192">LLaMA 3 (70B)</option>
+                <option value="mixtral-8x7b-32768">Mixtral</option>
+            </select>
+
+            <input type="text" name="system" id="systemInput" placeholder="🔐 Hidden Prompt (optional)" maxlength="50">
+            <input type="text" name="message" id="userInput" placeholder="Type a message..." required>
+            <button type="submit">Send ➤</button>
+            <button type="button" onclick="startVoice()">🎤 Speak</button>
+        </form>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById("chatBox");
+        const chatForm = document.getElementById("chatForm");
+
+        chatForm.onsubmit = async function (e) {
+            e.preventDefault();
+            const message = document.getElementById("userInput").value;
+            const system = document.getElementById("systemInput").value;
+            const model = document.getElementById("modelSelector").value;
+
+            chatBox.innerHTML += `<div class="user">🧑 You: ${message}</div>`;
+            document.getElementById("userInput").value = '';
+
+            const res = await fetch('/chat', {
+                method: 'POST',
+                body: new URLSearchParams({ message, system, model }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            const data = await res.json();
+            chatBox.innerHTML += `<div class="ai">🤖 Shadow AI: ${data.reply}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+        function startVoice() {
+            const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.start();
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById("userInput").value = transcript;
+            };
+        }
+    </script>
+</body>
+</html>
