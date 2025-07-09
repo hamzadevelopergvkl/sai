@@ -1,61 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>⚡ Shadow AI Chat</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>⚡ Shadow AI Chat</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4fc3f7;
+      margin-bottom: 20px;
+    }
+
+    .chat-box {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 15px;
+      height: 400px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+
+    .user, .ai {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .user {
+      background: #2c2c2c;
+      color: #fdd835;
+    }
+
+    .ai {
+      background: #263238;
+      color: #80cbc4;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+    }
+
+    input[type="text"], select {
+      flex: 1 1 100%;
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button {
+      flex: 1 1 48%;
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background: #4fc3f7;
+      color: #000;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0288d1;
+    }
+
+    select#modelSelector {
+      background: #2c2c2c;
+      color: #ffffff;
+      font-weight: bold;
+      border: 2px solid #4fc3f7;
+    }
+
+    @media (max-width: 600px) {
+      .chat-box {
+        height: 300px;
+      }
+
+      button {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>⚡ Shadow AI</h1>
-        <div class="chat-box" id="chatBox"></div>
+  <div class="container">
+    <h1>⚡ Shadow AI</h1>
 
-        <form id="chatForm">
-            <select id="modelSelector" name="model">
-                <option value="llama3-8b-8192">LLaMA 3 (8B)</option>
-                <option value="llama3-70b-8192">LLaMA 3 (70B)</option>
-                <option value="mixtral-8x7b-32768">Mixtral</option>
-            </select>
+    <div class="chat-box" id="chatBox"></div>
 
-            <input type="text" name="system" id="systemInput" placeholder="🔐 Hidden Prompt (optional)" maxlength="50">
-            <input type="text" name="message" id="userInput" placeholder="Type a message..." required>
-            <button type="submit">Send ➤</button>
-            <button type="button" onclick="startVoice()">🎤 Speak</button>
-        </form>
-    </div>
+    <form id="chatForm">
+      <select id="modelSelector" name="model">
+        <option value="llama3-8b-8192">🦙 LLaMA 3 (8B)</option>
+        <option value="llama3-70b-8192">🦙 LLaMA 3 (70B)</option>
+        <option value="mixtral-8x7b-32768">⚡ Mixtral (Fast & Smart)</option>
+      </select>
 
-    <script>
-        const chatBox = document.getElementById("chatBox");
-        const chatForm = document.getElementById("chatForm");
+      <input type="text" name="system" id="systemInput" placeholder="🔐 Hidden Prompt (optional)" maxlength="50">
+      <input type="text" name="message" id="userInput" placeholder="Type a message..." required>
+      <button type="submit">Send ➤</button>
+    </form>
+  </div>
 
-        chatForm.onsubmit = async function (e) {
-            e.preventDefault();
-            const message = document.getElementById("userInput").value;
-            const system = document.getElementById("systemInput").value;
-            const model = document.getElementById("modelSelector").value;
+  <script>
+    const chatBox = document.getElementById("chatBox");
+    const chatForm = document.getElementById("chatForm");
 
-            chatBox.innerHTML += `<div class="user">🧑 You: ${message}</div>`;
-            document.getElementById("userInput").value = '';
+    chatForm.onsubmit = async function (e) {
+      e.preventDefault();
+      const message = document.getElementById("userInput").value;
+      const system = document.getElementById("systemInput").value;
+      const model = document.getElementById("modelSelector").value;
 
-            const res = await fetch('/chat', {
-                method: 'POST',
-                body: new URLSearchParams({ message, system, model }),
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            });
-            const data = await res.json();
-            chatBox.innerHTML += `<div class="ai">🤖 Shadow AI: ${data.reply}</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        };
+      chatBox.innerHTML += `<div class="user">🧑 You: ${message}</div>`;
+      document.getElementById("userInput").value = '';
 
-        function startVoice() {
-            const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'en-US';
-            recognition.start();
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById("userInput").value = transcript;
-            };
-        }
-    </script>
+      const res = await fetch('/chat', {
+        method: 'POST',
+        body: new URLSearchParams({ message, system, model }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+
+      const data = await res.json();
+      chatBox.innerHTML += `<div class="ai">🤖 Shadow AI: ${data.reply}</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    };
+  </script>
 </body>
 </html>
